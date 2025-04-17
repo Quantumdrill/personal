@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cantata+One&family=Gravitas+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="gallery.css">
+    <script src="anime.min.js"></script>
+    <script type="module" src="gallery.js" defer></script>
+    <title>Gallery</title>
+</head>
+<body ID="GalleryBG">
+    <h1 ID="GalleryText" class="FatFont">GALLERY</h1>
+    <h2 ID="OrderIndication" class="FatFont">BY TIME ORDER</h2>
+    <div ID="ChangeOrderBtn" class="RegularFont">
+        <p ID="ChangeOrderBtnText">SWITCH TO COLLECTION ORDER</p>
+        <div ID="ChangeOrderBtnBG"></div>
+        <div ID="ChangeOrderBtnTransition"></div>
+    </div>
+    <div ID="TransparentCover"></div>
+    <div ID="TransparentCover2"></div>
+    <main ID="MainGalleryWindow">
+        <div ID="GalleryLongPage">
+            <div class="GalleryEndOfList"></div>
+        </div>
+    </main>
+    <section ID="ScrollMenuWindow">
+        <div ID="ScrollMenuLongPage">
+        </div>
+    </section>
+    <div ID="ImageDisplay">
+        <div ID="ImageDisplayImageBox">
+            <img ID="ImageDisplayImage" src="">
+        </div>
+        <div ID="ImageDisplayMenu">
+        </div>
+        <img ID="ImageDisplayCross" src="cross-svgrepo-com.svg">
+    </div>
+</body>
+</html>
