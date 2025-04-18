@@ -8,14 +8,6 @@ app.use(express.static('static'))
 app.use('/shichen', require('./shichen/server_shichen'))
 app.set("view engine","ejs")
 
-//-----comment this for local testing--------------------
-const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/tobylu-qd.com/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/tobylu-qd.com/fullchain.pem')
-};
-//-------------------------------------------------------
-
-
 app.get("/", async (req,res)=>{
   //let result="1"
   let key1s = ["emotions","actions"]
@@ -29,7 +21,10 @@ app.get("/", async (req,res)=>{
 })
 
 //-----use this for online server------------------------
-https.createServer(options, app).listen(443, ()=>{
+https.createServer({
+  key: fs.readFileSync('/etc/letsencrypt/live/tobylu-qd.com/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/tobylu-qd.com/fullchain.pem')
+}, app).listen(443, ()=>{
   console.log("http://127.0.0.1:443")
 });
 //-------------------------------------------------------
