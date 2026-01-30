@@ -1,0 +1,19 @@
+<svg viewBox="0 0 400 400" width="400" height="400">
+  <path id="circlePath"
+    d="M 200 60 A 140 140 0 1 1 200 340 A 140 140 0 1 1 200 60"
+    fill="none"
+    stroke="lightgray"
+  />
+
+  <text font-size="18" font-family="system-ui" fill="black">
+    <textPath href="#circlePath" startOffset="50%" text-anchor="middle">
+      <a href="#home"><tspan>Home</tspan></a>
+      <tspan> • </tspan>
+      <a href="#work"><tspan>Work</tspan></a>
+      <tspan> • </tspan>
+      <a href="#about"><tspan>About</tspan></a>
+      <tspan> • </tspan>
+      <a href="#contact"><tspan>Contact</tspan></a>
+    </textPath>
+  </text>
+</svg>

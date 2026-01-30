@@ -1,0 +1,100 @@
+* {
+    margin: 0;
+}
+
+.font-cp-r {
+  font-family: "Crimson Pro", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-rhd-b {
+  font-family: "Red Hat Display", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.font-rhd-r {
+  font-family: "Red Hat Display", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-cpo {
+  font-family: "Chau Philomene One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-cpo-i {
+  font-family: "Chau Philomene One", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.tab-size {
+    font-size: 60px;
+}
+
+.name-size {
+    font-size: 40px;
+}
+
+.heading-size {
+    font-size: 18px;
+}
+
+.text-size {
+    font-size: 13px;
+}
+
+.text-size-l {
+    font-size: 16px;
+}
+
+.font-dark {
+    color: #333333;
+}
+
+.font-orange {
+    color: #FFA973;
+}
+
+.font-red {
+    color: #D35640
+}
+
+.font-white {
+    color: #dddddd
+}
+
+.bg-dark {
+    background-color: #333333;
+}
+
+.bg-orange {
+    background-color: #FFA973;
+}
+
+.svg-dark {
+    fill: #333333;
+}
+
+.svg-orange {
+    fill: #FFA973;
+}
+
+.svg-red {
+    fill: #D35640
+}
+
+.page-title {
+
+}
+
+.page-text {
+
+}
