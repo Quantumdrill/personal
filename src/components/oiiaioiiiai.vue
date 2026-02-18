@@ -1,5 +1,7 @@
 <script setup>
+    import {useTemplateRef} from "vue"
     document.title = "oiiaioiiiai"
+    const oiiaAudio = useTemplateRef("oiia")
 </script>
 <template>
     <div id="body">
@@ -7,7 +9,8 @@
             <img src="https://i.makeagif.com/media/10-26-2024/79S5ln.gif">
             <div id="mask"></div>
         </div>
-        <audio controls autoplay><source src="/oiiaioiiiai.mp3" type="audio/mpeg"></audio>
+        <button @click="oiiaAudio.play()">♪oiiaioiiiai♪</button>
+        <audio ref="oiia"><source src="/oiiaioiiiai.mp3" type="audio/mpeg"></audio>
         <p>music: <a href="https://open.spotify.com/track/5fr7VBuNTiXAq4rH1e3v3q?si=c46ac406892d49bc">OIIA OIIA (Spinning Cat) - W&W</a></p>
     </div>
 </template>
@@ -49,5 +52,14 @@ p {
     bottom: 0;
     left: 0;
     font-size: 10px;
+}
+
+button {
+    border: none;
+    border-radius: 3px;
+    font-size: 20px;
+    padding: 10px;
+    box-sizing: border-box;
+    cursor: pointer;
 }
 </style>
