@@ -2,6 +2,11 @@
 
   import name from "./components/name.vue"
   import circleBG from "./components/circle.vue"
+
+  import { useRouter, useRoute } from 'vue-router'
+
+  const router = useRouter()
+  const route = useRoute()
   
 
   let key1s = ["emotions","actions"]
@@ -20,10 +25,11 @@
 </script>
 
 <template>
-  <div id="bg" class="bg-orange">
+  <router-view />
+  <!-- <div id="bg" class="bg-orange">
     <name/>
     <circleBG/>
-  </div>
+  </div> -->
 </template>
 
 <style scoped>
