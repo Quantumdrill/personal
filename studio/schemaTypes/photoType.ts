@@ -21,5 +21,12 @@ export const photoType = defineType({
       type: 'text',
       rows: 3,
     }),
+
+    defineField({
+      name: 'isThumbnail',
+      title: 'Use as thumbnail',
+      type: 'boolean',
+      initialValue: false,
+    }),
   ],
 })

@@ -2,6 +2,7 @@
 import { computed, ref, nextTick, onMounted } from 'vue'
 import gsap from 'gsap'
 import { getAlbums, getTagsWithSets, getSets } from '../lib/queries'
+import PhotoCards from './PhotoCards.vue'
 
 const sets = ref([])
 const albums = ref([])
@@ -17,6 +18,8 @@ onMounted(async () => {
   sets.value = fetchedSets
   albums.value = fetchedAlbums
   tagsWithSets.value = fetchedTags
+
+  console.log(sets.value)
 })
 
 const sortBy = ref(null)
@@ -24,7 +27,13 @@ const sortByTitle = ref(null)
 const sortByPanel = ref(null)
 const sortByLineV = ref(null)
 const sortByLineH = ref(null)
+const photoLineL = ref(null)
+const photoLineR = ref(null)
+const photoLineT = ref(null)
+const photoLineB = ref(null)
+const hoveredPhoto = ref(null)
 const isOpen = ref(false)
+const isHoveringGallery = ref(false)
 const sortByMode = ref('Time')
 
 const galleryGroups = computed(() => {
@@ -157,7 +166,7 @@ function moveLinesToHit(hit, highlighted, duration) {
   let topH
   if (highlighted) {
     const hitBox = hit.getBoundingClientRect()
-    const shift = window.innerWidth * 0.008
+    const shift = hit.dataset.mode === sortByMode.value ? 0 : window.innerWidth * 0.008
     leftV = hitBox.left + shift + text.offsetWidth + gap
     topH = hitBox.top + (hitBox.height - text.offsetHeight) / 2 + text.offsetHeight
   } else {
@@ -188,22 +197,29 @@ function moveLinesToHit(hit, highlighted, duration) {
 
 function highlightOption(event) {
   const hits = sortByPanel.value.querySelectorAll('.sortByOptionHit')
+  const hoveringCurrent = event.currentTarget.dataset.mode === sortByMode.value
   hits.forEach((hit) => {
     const isCurrent = hit.dataset.mode === sortByMode.value
     const isHighlighted = hit === event.currentTarget && !isCurrent
+    gsap.to(hit, {
+      x: isCurrent ? '1.5em' : 0,
+      duration: 0.2,
+      ease: 'power2.out',
+    })
     gsap.to(hit.querySelector('.sortByOption'), {
-      opacity: isCurrent ? 0.2 : isHighlighted ? 0.8 : 0.2,
-      x: isCurrent ? '1.5em' : isHighlighted ? '0.8vw' : 0,
+      opacity: isCurrent ? (hoveringCurrent ? 0.8 : 0.2) : isHighlighted ? 0.8 : 0.2,
+      x: isHighlighted ? '0.8vw' : 0,
       duration: 0.2,
       ease: 'power2.out',
     })
   })
-  moveLinesToHit(event.currentTarget, true, 0.2)
+  moveLinesToHit(event.currentTarget, !hoveringCurrent, 0.2)
 }
 
 function selectSortBy(mode) {
-  if (mode === sortByMode.value) return
-  sortByMode.value = mode
+  if (mode !== sortByMode.value) {
+    sortByMode.value = mode
+  }
   closeSortBy()
 }
 
@@ -214,9 +230,14 @@ function resetOptions(event) {
   const hits = sortByPanel.value.querySelectorAll('.sortByOptionHit')
   hits.forEach((hit) => {
     const isCurrent = hit.dataset.mode === sortByMode.value
-    gsap.to(hit.querySelector('.sortByOption'), {
-      opacity: isCurrent ? 0.8 : 0.5,
+    gsap.to(hit, {
       x: isCurrent ? '1.5em' : 0,
+      duration: 0.2,
+      ease: 'power2.out',
+    })
+    gsap.to(hit.querySelector('.sortByOption'), {
+      opacity: isCurrent ? 0.8 : 0.2,
+      x: 0,
       duration: 0.2,
       ease: 'power2.out',
     })
@@ -224,6 +245,68 @@ function resetOptions(event) {
   nextTick(() => {
     moveLinesToHit(currentHit(), false, 0.2)
   })
+}
+
+function placePhotoLines(photoBox, duration) {
+  if (duration === 0) {
+    gsap.killTweensOf([
+      photoLineL.value,
+      photoLineR.value,
+      photoLineT.value,
+      photoLineB.value,
+    ])
+    gsap.set(photoLineL.value, { left: photoBox.left })
+    gsap.set(photoLineR.value, { left: photoBox.right - 2 })
+    gsap.set(photoLineT.value, { top: photoBox.top })
+    gsap.set(photoLineB.value, { top: photoBox.bottom - 2 })
+    return
+  }
+
+  const tween = {
+    duration,
+    ease: 'power2.out',
+  }
+
+  gsap.to(photoLineL.value, { left: photoBox.left, ...tween })
+  gsap.to(photoLineR.value, { left: photoBox.right - 2, ...tween })
+  gsap.to(photoLineT.value, { top: photoBox.top, ...tween })
+  gsap.to(photoLineB.value, { top: photoBox.bottom - 2, ...tween })
+}
+
+function showPhotoLines(photoEl) {
+  hoveredPhoto.value = photoEl
+  placePhotoLines(photoEl.getBoundingClientRect(), 0.35)
+}
+
+function hidePhotoLines(event) {
+  if (event && event.relatedTarget && event.relatedTarget.closest('.photoCardImage')) {
+    return
+  }
+
+  hoveredPhoto.value = null
+
+  const tween = {
+    duration: 0.35,
+    ease: 'power2.in',
+  }
+
+  gsap.to(photoLineL.value, { left: -2, ...tween })
+  gsap.to(photoLineR.value, { left: window.innerWidth, ...tween })
+  gsap.to(photoLineT.value, { top: -2, ...tween })
+  gsap.to(photoLineB.value, { top: window.innerHeight, ...tween })
+}
+
+function onGalleryScroll() {
+  if (!hoveredPhoto.value) return
+  placePhotoLines(hoveredPhoto.value.getBoundingClientRect(), 0)
+}
+
+function enterGallery() {
+  isHoveringGallery.value = true
+}
+
+function leaveGallery() {
+  isHoveringGallery.value = false
 }
 </script>
 
@@ -293,27 +376,47 @@ function resetOptions(event) {
       </div>
     </section>
 
-    <section class="photoGallery" v-on:click="closeSortBy">
-      <div class="photoGalleryScroll">
+    <section
+      class="photoGallery"
+      v-bind:class="{ isSortOpen: isOpen }"
+      v-on:click="closeSortBy"
+      v-on:mouseenter="enterGallery"
+      v-on:mouseleave="leaveGallery"
+    >
+      <div
+        class="photoGalleryScroll"
+        v-bind:style="{ pointerEvents: isOpen ? 'none' : 'auto' }"
+        v-on:scroll="onGalleryScroll"
+      >
         <template v-for="group in galleryGroups" v-bind:key="group.key">
           <div class="photoGalleryDivider">
             {{ group.label }}
           </div>
           <div class="photoGalleryGroup">
-            <div
+            <PhotoCards
               v-for="set in group.sets"
               v-bind:key="set._id"
-              class="photoCard"
-            >
-              {{ set.name }}
-            </div>
+              v-bind:set="set"
+              v-on:photoenter="showPhotoLines"
+              v-on:photoleave="hidePhotoLines"
+            />
           </div>
         </template>
       </div>
     </section>
 
+    <p
+      class="galleryBack"
+      v-bind:class="{ isVisible: isOpen && isHoveringGallery }"
+    >
+      back
+    </p>
     <div ref="sortByLineV" class="sortByLineV"></div>
     <div ref="sortByLineH" class="sortByLineH"></div>
+    <div ref="photoLineL" class="photoLineL"></div>
+    <div ref="photoLineR" class="photoLineR"></div>
+    <div ref="photoLineT" class="photoLineT"></div>
+    <div ref="photoLineB" class="photoLineB"></div>
   </div>
 </template>
 
@@ -352,7 +455,7 @@ function resetOptions(event) {
   font-family: "Neuton", serif;
   font-size: 2.5vw;
   opacity: 0.2;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .sortByOptions {
@@ -377,20 +480,18 @@ function resetOptions(event) {
 }
 
 .sortByOptionHit.isCurrent {
-  cursor: default;
-  pointer-events: none;
+  transform: translateX(1.5em);
 }
 
 .sortByOptionHit.isCurrent .sortByOption {
   opacity: 0.8;
-  cursor: default;
-  transform: translateX(1.5em);
+  cursor: pointer;
 }
 
 .sortByLineV,
 .sortByLineH {
   position: fixed;
-  z-index: 3;
+  z-index: 0;
   background: rgb(255 255 255 / 10%);
   pointer-events: none;
   opacity: 0;
@@ -409,6 +510,46 @@ function resetOptions(event) {
   height: 2px;
 }
 
+.photoLineL,
+.photoLineR,
+.photoLineT,
+.photoLineB {
+  position: fixed;
+  z-index: 0;
+  background: rgb(255 255 255 / 10%);
+  pointer-events: none;
+}
+
+.photoLineL,
+.photoLineR {
+  top: 0;
+  width: 2px;
+  height: 100vh;
+}
+
+.photoLineT,
+.photoLineB {
+  left: 0;
+  width: 100vw;
+  height: 2px;
+}
+
+.photoLineL {
+  left: -2px;
+}
+
+.photoLineR {
+  left: 100vw;
+}
+
+.photoLineT {
+  top: -2px;
+}
+
+.photoLineB {
+  top: 100vh;
+}
+
 .sortByOption {
   display: block;
   width: max-content;
@@ -422,7 +563,7 @@ function resetOptions(event) {
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.2;
   pointer-events: none;
 }
 
@@ -466,6 +607,35 @@ function resetOptions(event) {
   width: 85vw;
   height: 100%;
   overflow: hidden;
+}
+
+.photoGallery.isSortOpen {
+  cursor: pointer;
+}
+
+.galleryBack {
+  position: fixed;
+  z-index: 3;
+  top: auto;
+  right: -50vw;
+  bottom: calc(4vw - (8vw - 7vw) / 2);
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-family: "Neuton", serif;
+  font-size: 45vw;
+  font-weight: 800;
+  line-height: 0.75;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.galleryBack.isVisible {
+  opacity: 0.05;
 }
 
 .photoGalleryScroll {
@@ -515,18 +685,5 @@ function resetOptions(event) {
   gap: var(--gallery-gap);
   margin-top: 1vw;
   margin-bottom: 1vw;
-}
-
-.photoCard {
-  box-sizing: border-box;
-  width: calc((100% - 3 * var(--gallery-gap)) / 4);
-  aspect-ratio: 1;
-  padding: 0.8vw;
-  background: none;
-  color: hsl(0, 0%, 80%);
-  font-family: "Neuton", serif;
-  font-size: 1vw;
-  font-weight: 800;
-  line-height: 1;
 }
 </style>

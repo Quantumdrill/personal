@@ -22,6 +22,7 @@ export async function getAlbums() {
 
         photos[]{
           comment,
+          isThumbnail,
 
           asset->{
             _id,
@@ -55,6 +56,7 @@ export async function getSets() {
 
       photos[]{
         comment,
+        isThumbnail,
 
         asset->{
           _id,
@@ -68,6 +70,39 @@ export async function getSets() {
   `
 
   return await sanityClient.fetch(query)
+}
+
+
+export async function getSet(id: string) {
+  const query = `
+    *[_type == "set" && _id == $id][0]{
+      _id,
+      name,
+      time,
+      location,
+      comment,
+
+      tags[]->{
+        _id,
+        name
+      },
+
+      photos[]{
+        comment,
+        isThumbnail,
+
+        asset->{
+          _id,
+          url,
+          metadata {
+            dimensions
+          }
+        }
+      }
+    }
+  `
+
+  return await sanityClient.fetch(query, { id })
 }
 
 
@@ -116,6 +151,7 @@ export async function getTagsWithSets() {
   
           photos[]{
             comment,
+            isThumbnail,
             asset->{
               _id,
               url
