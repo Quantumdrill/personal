@@ -75,7 +75,9 @@ function photoSizes(photo) {
 
 function onPhotoLoad() {
   isLoading.value = false
+}
 
+function onPhotoWheel(event) {
   event.preventDefault()
   if (isPaging.value || !photoScroll.value) return
 
@@ -112,7 +114,7 @@ function onPhotoLoad() {
     <span class="photoSectionDot photoSectionDotTR"></span>
     <span class="photoSectionDot photoSectionDotBL"></span>
     <span class="photoSectionDot photoSectionDotBR"></span>
-    <section class="infoSection">
+    <section class="infoSection" v-on:wheel="onPhotoWheel">
       <div class="infoMeta">
         <p v-if="setDate" class="infoTime">{{ setDate }}</p>
         <p v-if="set && set.location" class="infoLocation">{{ set.location }}</p>
