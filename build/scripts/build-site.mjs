@@ -14,7 +14,7 @@ mkdirSync("./site-dist", {
 for (const project of projects) {
   const projectPath = `./projects/${project.folder}`;
 
-  execSync(`npm install --prefix "${projectPath}"`, {
+  execSync(`npm ci --prefix "${projectPath}"`, {
     stdio: "inherit",
   });
 
