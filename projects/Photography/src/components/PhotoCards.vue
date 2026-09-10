@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { urlFor } from '../lib/image'
 
 const props = defineProps({
   set: {
@@ -20,6 +21,49 @@ const thumbnail = computed(() => {
   if (marked) return marked
 
   return photos[0]
+})
+
+const thumbnailDimensions = computed(() => {
+  return thumbnail.value?.asset?.metadata?.dimensions
+})
+
+const isPortrait = computed(() => {
+  const dimensions = thumbnailDimensions.value
+  return dimensions ? dimensions.height > dimensions.width : false
+})
+
+const thumbnailSrc = computed(() => {
+  if (!thumbnail.value) return ''
+
+  const image = urlFor(thumbnail.value).auto('format').quality(85)
+  return isPortrait.value ? image.height(640).url() : image.width(640).url()
+})
+
+const thumbnailSrcSet = computed(() => {
+  if (!thumbnail.value) return ''
+
+  const ratio = thumbnailDimensions.value?.aspectRatio ?? 1
+  const sizes = [360, 640, 960]
+
+  return sizes
+    .map((size) => {
+      const image = urlFor(thumbnail.value).auto('format').quality(85)
+
+      if (isPortrait.value) {
+        const resultingWidth = Math.round(size * ratio)
+        return `${image.height(size).url()} ${resultingWidth}w`
+      }
+
+      return `${image.width(size).url()} ${size}w`
+    })
+    .join(', ')
+})
+
+const thumbnailSizes = computed(() => {
+  if (!isPortrait.value) return '17vw'
+
+  const ratio = thumbnailDimensions.value?.aspectRatio ?? 1
+  return `${Math.round(17 * ratio * 100) / 100}vw`
 })
 
 function enterPhoto(event) {
@@ -44,7 +88,11 @@ function openSet() {
     <img
       v-if="thumbnail && thumbnail.asset"
       class="photoCardImage"
-      v-bind:src="thumbnail.asset.url"
+      v-bind:src="thumbnailSrc"
+      v-bind:srcset="thumbnailSrcSet"
+      v-bind:sizes="thumbnailSizes"
+      v-bind:width="thumbnailDimensions && thumbnailDimensions.width"
+      v-bind:height="thumbnailDimensions && thumbnailDimensions.height"
       v-bind:alt="set.name"
       v-on:mouseenter="enterPhoto"
       v-on:mouseleave="leavePhoto"

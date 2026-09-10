@@ -6,6 +6,7 @@ export async function getAlbums() {
     *[_type == "album"]{
       _id,
       name,
+      time,
       comment,
 
       sets[]->{
@@ -28,7 +29,11 @@ export async function getAlbums() {
             _id,
             url,
             metadata {
-              dimensions
+              dimensions {
+                width,
+                height,
+                aspectRatio
+              }
             }
           }
         }
@@ -62,7 +67,11 @@ export async function getSets() {
           _id,
           url,
           metadata {
-            dimensions
+            dimensions {
+              width,
+              height,
+              aspectRatio
+            }
           }
         }
       }
@@ -95,7 +104,11 @@ export async function getSet(id: string) {
           _id,
           url,
           metadata {
-            dimensions
+            dimensions {
+              width,
+              height,
+              aspectRatio
+            }
           }
         }
       }
@@ -125,7 +138,11 @@ export async function getImages() {
       originalFilename,
       url,
       metadata {
-        dimensions
+        dimensions {
+          width,
+          height,
+          aspectRatio
+        }
       }
     }
   `
@@ -154,7 +171,14 @@ export async function getTagsWithSets() {
             isThumbnail,
             asset->{
               _id,
-              url
+              url,
+              metadata {
+                dimensions {
+                  width,
+                  height,
+                  aspectRatio
+                }
+              }
             }
           }
         }

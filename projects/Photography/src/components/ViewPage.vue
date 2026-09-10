@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getSet } from '../lib/queries'
+import { urlFor } from '../lib/image'
 
 const route = useRoute()
 const set = ref(null)
@@ -9,6 +10,8 @@ const photoScroll = ref(null)
 const isPaging = ref(false)
 
 const setDate = computed(() => formatSetDate(set.value && set.value.time))
+
+const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 
 onMounted(async () => {
   set.value = await getSet(route.params.id)
@@ -24,6 +27,46 @@ function formatSetDate(time) {
   }).format(new Date(Date.UTC(year, month - 1)))
 
   return `${year} ${monthName} ${day}`
+}
+
+function photoDimensions(photo) {
+  return photo.asset?.metadata?.dimensions
+}
+
+function isPortrait(photo) {
+  const dimensions = photoDimensions(photo)
+  return dimensions ? dimensions.height > dimensions.width : false
+}
+
+function photoSrc(photo) {
+  const image = urlFor(photo).auto('format').quality(100)
+  return isPortrait(photo) ? image.height(1600).url() : image.width(1600).url()
+}
+
+function photoSrcSet(photo) {
+  const dimensions = photoDimensions(photo)
+  const ratio = dimensions?.aspectRatio ?? 1
+  const sizes = isPortrait(photo) ? [900, 1600, 2400, 3600] : [960, 1600, 2400, 3600]
+
+  return sizes
+    .map((size) => {
+      const image = urlFor(photo).auto('format').quality(100)
+
+      if (isPortrait(photo)) {
+        const resultingWidth = Math.round(size * ratio)
+        return `${image.height(size).url()} ${resultingWidth}w`
+      }
+
+      return `${image.width(size).url()} ${size}w`
+    })
+    .join(', ')
+}
+
+function photoSizes(photo) {
+  if (!isPortrait(photo)) return '80vw'
+
+  const ratio = photoDimensions(photo)?.aspectRatio ?? 1
+  return `${Math.round(100 * ratio * 100) / 100}vh`
 }
 
 function onPhotoWheel(event) {
@@ -54,6 +97,7 @@ function onPhotoWheel(event) {
 
 <template>
   <div class="view">
+    <img class="viewLogo" v-bind:src="logoSrc" alt="" />
     <section class="photoSection">
       <span class="photoSectionDot photoSectionDotTL"></span>
       <span class="photoSectionDot photoSectionDotTR"></span>
@@ -72,7 +116,11 @@ function onPhotoWheel(event) {
           <img
             v-if="photo.asset"
             class="photoSlideImage"
-            v-bind:src="photo.asset.url"
+            v-bind:src="photoSrc(photo)"
+            v-bind:srcset="photoSrcSet(photo)"
+            v-bind:sizes="photoSizes(photo)"
+            v-bind:width="photoDimensions(photo) && photoDimensions(photo).width"
+            v-bind:height="photoDimensions(photo) && photoDimensions(photo).height"
             v-bind:alt="set.name"
           />
         </div>
@@ -96,6 +144,17 @@ function onPhotoWheel(event) {
   height: 100svh;
   overflow: hidden;
   background: hsl(0, 0%, 20%);
+}
+
+.viewLogo {
+  position: fixed;
+  z-index: 4;
+  top: 1vw;
+  right: 1vw;
+  width: 3vw;
+  height: auto;
+  opacity: 0.2;
+  pointer-events: none;
 }
 
 .photoSection {

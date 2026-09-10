@@ -33,18 +33,59 @@ const photoLineT = ref(null)
 const photoLineB = ref(null)
 const hoveredPhoto = ref(null)
 const isOpen = ref(false)
+const isSortReady = ref(false)
+const isGalleryReady = ref(true)
+const showSortTitle = ref(true)
 const isHoveringGallery = ref(false)
-const sortByMode = ref('Time')
+const sortByMode = ref('Random')
+
+function shuffleSets(list) {
+  const shuffled = [...list]
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const currentSet = shuffled[index]
+    shuffled[index] = shuffled[randomIndex]
+    shuffled[randomIndex] = currentSet
+  }
+  return shuffled
+}
 
 const galleryGroups = computed(() => {
-  if (sortByMode.value !== 'Time') {
+  if (sortByMode.value === 'Random') {
     return [
       {
-        key: 'all',
+        key: 'random',
         label: '',
-        sets: sets.value,
+        sets: shuffleSets(sets.value),
       },
     ]
+  }
+
+  if (sortByMode.value === 'Tag') {
+    return tagsWithSets.value
+      .filter((tag) => tag.sets && tag.sets.length > 0)
+      .map((tag) => ({
+        key: tag._id,
+        label: tag.name,
+        sets: tag.sets,
+      }))
+  }
+
+  if (sortByMode.value === 'Album') {
+    return [...albums.value]
+      .sort((firstAlbum, secondAlbum) => {
+        return (secondAlbum.time ?? '').localeCompare(firstAlbum.time ?? '')
+      })
+      .map((album) => ({
+        key: album._id,
+        label: album.name,
+        sets: (album.sets || []).filter((set) => set),
+      }))
+      .filter((group) => group.sets.length > 0)
+  }
+
+  if (sortByMode.value !== 'Time') {
+    return []
   }
 
   const groupsByMonth = new Map()
@@ -102,10 +143,25 @@ function fadeTitleOut() {
 function openSortBy() {
   if (isOpen.value) return
   isOpen.value = true
+  isGalleryReady.value = false
+  parkPhotoLines()
   gsap.to(sortBy.value, {
     marginLeft: 0,
     duration: 0.35,
     ease: 'power2.out',
+    onComplete: () => {
+      if (!isOpen.value) return
+      isSortReady.value = true
+      showSortTitle.value = false
+      nextTick(() => {
+        moveLinesToHit(currentHit(), false, 0)
+        gsap.to([sortByLineV.value, sortByLineH.value], {
+          opacity: 1,
+          duration: 0.2,
+          ease: 'power2.out',
+        })
+      })
+    },
   })
   gsap.to(sortByTitle.value, {
     opacity: 0,
@@ -117,28 +173,28 @@ function openSortBy() {
     duration: 0.35,
     ease: 'power2.out',
   })
-  gsap.to([sortByLineV.value, sortByLineH.value], {
-    opacity: 1,
-    duration: 0.35,
-    ease: 'power2.out',
-  })
-  nextTick(() => {
-    moveLinesToHit(currentHit(), false, 0)
-  })
 }
 
 function closeSortBy() {
   if (!isOpen.value) return
   isOpen.value = false
+  isSortReady.value = false
+  showSortTitle.value = true
   gsap.to(sortBy.value, {
     marginLeft: '-45vw',
     duration: 0.35,
     ease: 'power2.out',
+    onComplete: () => {
+      if (isOpen.value) return
+      isGalleryReady.value = true
+    },
   })
-  gsap.to(sortByTitle.value, {
-    opacity: 0.1,
-    duration: 0.35,
-    ease: 'power2.out',
+  nextTick(() => {
+    gsap.to(sortByTitle.value, {
+      opacity: 0.1,
+      duration: 0.35,
+      ease: 'power2.out',
+    })
   })
   gsap.to(sortByPanel.value, {
     opacity: 0,
@@ -196,6 +252,7 @@ function moveLinesToHit(hit, highlighted, duration) {
 }
 
 function highlightOption(event) {
+  if (!isSortReady.value) return
   const hits = sortByPanel.value.querySelectorAll('.sortByOptionHit')
   const hoveringCurrent = event.currentTarget.dataset.mode === sortByMode.value
   hits.forEach((hit) => {
@@ -273,7 +330,22 @@ function placePhotoLines(photoBox, duration) {
   gsap.to(photoLineB.value, { top: photoBox.bottom - 2, ...tween })
 }
 
+function parkPhotoLines() {
+  hoveredPhoto.value = null
+  gsap.killTweensOf([
+    photoLineL.value,
+    photoLineR.value,
+    photoLineT.value,
+    photoLineB.value,
+  ])
+  gsap.set(photoLineL.value, { left: -2 })
+  gsap.set(photoLineR.value, { left: window.innerWidth })
+  gsap.set(photoLineT.value, { top: -2 })
+  gsap.set(photoLineB.value, { top: window.innerHeight })
+}
+
 function showPhotoLines(photoEl) {
+  if (!isGalleryReady.value) return
   hoveredPhoto.value = photoEl
   placePhotoLines(photoEl.getBoundingClientRect(), 0.35)
 }
@@ -308,15 +380,18 @@ function enterGallery() {
 function leaveGallery() {
   isHoveringGallery.value = false
 }
+
+const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 </script>
 
 <template>
   <div class="browse">
+    <img class="browseLogo" v-bind:src="logoSrc" alt="" />
     <section ref="sortBy" class="sortBy">
       <div
         ref="sortByPanel"
         class="sortByPanel"
-        v-bind:style="{ pointerEvents: isOpen ? 'auto' : 'none' }"
+        v-bind:style="{ pointerEvents: isSortReady ? 'auto' : 'none' }"
       >
         <p class="sortByHeading">Sort photo sets by:</p>
         <div class="sortByOptions">
@@ -367,6 +442,7 @@ function leaveGallery() {
           ref="sortByTitle"
           class="sortByTitle"
           type="button"
+          v-show="showSortTitle"
           v-on:click="openSortBy"
           v-on:mouseenter="fadeTitleIn"
           v-on:mouseleave="fadeTitleOut"
@@ -385,11 +461,11 @@ function leaveGallery() {
     >
       <div
         class="photoGalleryScroll"
-        v-bind:style="{ pointerEvents: isOpen ? 'none' : 'auto' }"
+        v-bind:style="{ pointerEvents: isGalleryReady ? 'auto' : 'none' }"
         v-on:scroll="onGalleryScroll"
       >
         <template v-for="group in galleryGroups" v-bind:key="group.key">
-          <div class="photoGalleryDivider">
+          <div v-if="group.label" class="photoGalleryDivider">
             {{ group.label }}
           </div>
           <div class="photoGalleryGroup">
@@ -405,6 +481,10 @@ function leaveGallery() {
       </div>
     </section>
 
+    <div
+      class="galleryBackDim"
+      v-bind:class="{ isVisible: isOpen && isHoveringGallery }"
+    ></div>
     <p
       class="galleryBack"
       v-bind:class="{ isVisible: isOpen && isHoveringGallery }"
@@ -427,6 +507,17 @@ function leaveGallery() {
   height: 100svh;
   overflow: hidden;
   background: hsl(0, 0%, 20%);
+}
+
+.browseLogo {
+  position: fixed;
+  z-index: 4;
+  top: 1vw;
+  left: 1vw;
+  width: 3vw;
+  height: auto;
+  opacity: 0.2;
+  pointer-events: none;
 }
 
 .sortBy {
@@ -578,8 +669,8 @@ function leaveGallery() {
 
 .sortByTitle {
   position: absolute;
-  left: -0.5vw;
-  top: calc(100% - 1.5vw);
+  left: -1vw;
+  top: calc(100% - 1vw);
   pointer-events: auto;
   margin: 0;
   padding: 0;
@@ -613,9 +704,26 @@ function leaveGallery() {
   cursor: pointer;
 }
 
+.galleryBackDim {
+  position: fixed;
+  z-index: 5;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  background: #000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.galleryBackDim.isVisible {
+  opacity: 0.2;
+}
+
 .galleryBack {
   position: fixed;
-  z-index: 3;
+  z-index: 6;
   top: auto;
   right: -50vw;
   bottom: calc(4vw - (8vw - 7vw) / 2);
@@ -635,7 +743,7 @@ function leaveGallery() {
 }
 
 .galleryBack.isVisible {
-  opacity: 0.05;
+  opacity: 0.1;
 }
 
 .photoGalleryScroll {
@@ -667,14 +775,16 @@ function leaveGallery() {
 }
 
 .photoGalleryDivider {
+  box-sizing: border-box;
   flex-shrink: 0;
   width: 100%;
-  margin-top: 1vw;
-  margin-bottom: 1vw;
+  margin-top: 1.6vw;
+  margin-bottom: 0.6vw;
+  padding-left: 0.7vw;
   background: none;
   color: hsl(0, 0%, 80%);
   font-family: "Neuton", serif;
-  font-size: 4vw;
+  font-size: 3vw;
   font-weight: 600;
   line-height: 1;
 }
