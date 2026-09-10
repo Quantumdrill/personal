@@ -8,6 +8,7 @@ const route = useRoute()
 const set = ref(null)
 const photoScroll = ref(null)
 const isPaging = ref(false)
+const isLoading = ref(true)
 
 const setDate = computed(() => formatSetDate(set.value && set.value.time))
 
@@ -15,6 +16,9 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 
 onMounted(async () => {
   set.value = await getSet(route.params.id)
+  if (!set.value || !set.value.photos || set.value.photos.length === 0) {
+    isLoading.value = false
+  }
 })
 
 function formatSetDate(time) {
@@ -69,7 +73,9 @@ function photoSizes(photo) {
   return `${Math.round(100 * ratio * 100) / 100}vh`
 }
 
-function onPhotoWheel(event) {
+function onPhotoLoad() {
+  isLoading.value = false
+
   event.preventDefault()
   if (isPaging.value || !photoScroll.value) return
 
@@ -96,37 +102,16 @@ function onPhotoWheel(event) {
 </script>
 
 <template>
-  <div class="view">
+  <div
+    ref="photoScroll"
+    class="view"
+    v-on:wheel="onPhotoWheel"
+  >
     <img class="viewLogo" v-bind:src="logoSrc" alt="" />
-    <section class="photoSection">
-      <span class="photoSectionDot photoSectionDotTL"></span>
-      <span class="photoSectionDot photoSectionDotTR"></span>
-      <span class="photoSectionDot photoSectionDotBL"></span>
-      <span class="photoSectionDot photoSectionDotBR"></span>
-      <div
-        ref="photoScroll"
-        class="photoSectionScroll"
-        v-on:wheel="onPhotoWheel"
-      >
-        <div
-          v-for="(photo, index) in set && set.photos ? set.photos : []"
-          v-bind:key="photo.asset ? photo.asset._id : index"
-          class="photoSlide"
-        >
-          <img
-            v-if="photo.asset"
-            class="photoSlideImage"
-            v-bind:src="photoSrc(photo)"
-            v-bind:srcset="photoSrcSet(photo)"
-            v-bind:sizes="photoSizes(photo)"
-            v-bind:width="photoDimensions(photo) && photoDimensions(photo).width"
-            v-bind:height="photoDimensions(photo) && photoDimensions(photo).height"
-            v-bind:alt="set.name"
-          />
-        </div>
-      </div>
-    </section>
-
+    <span class="photoSectionDot photoSectionDotTL"></span>
+    <span class="photoSectionDot photoSectionDotTR"></span>
+    <span class="photoSectionDot photoSectionDotBL"></span>
+    <span class="photoSectionDot photoSectionDotBR"></span>
     <section class="infoSection">
       <div class="infoMeta">
         <p v-if="setDate" class="infoTime">{{ setDate }}</p>
@@ -134,16 +119,59 @@ function onPhotoWheel(event) {
         <p v-if="set && set.comment" class="infoComment">{{ set.comment }}</p>
       </div>
     </section>
+    <p v-if="isLoading" class="photoLoading">loading</p>
+    <div class="photoSlides">
+      <div
+        v-for="(photo, index) in set && set.photos ? set.photos : []"
+        v-bind:key="photo.asset ? photo.asset._id : index"
+        class="photoSlide"
+      >
+        <img
+          v-if="photo.asset"
+          class="photoSlideImage"
+          v-bind:src="photoSrc(photo)"
+          v-bind:srcset="photoSrcSet(photo)"
+          v-bind:sizes="photoSizes(photo)"
+          v-bind:width="photoDimensions(photo) && photoDimensions(photo).width"
+          v-bind:height="photoDimensions(photo) && photoDimensions(photo).height"
+          v-bind:alt="set.name"
+          v-on:load="onPhotoLoad"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .view {
-  display: flex;
+  --photo-pad: 0.8vw;
+  box-sizing: border-box;
   width: 100vw;
   height: 100svh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  direction: rtl;
+  scroll-snap-type: y mandatory;
   background: hsl(0, 0%, 20%);
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 20%) transparent;
+}
+
+.view::-webkit-scrollbar {
+  width: 9px;
+}
+
+.view::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.view::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 20%);
+  border-radius: 4.5px;
+}
+
+.view::-webkit-scrollbar-button {
+  display: none;
 }
 
 .viewLogo {
@@ -157,16 +185,8 @@ function onPhotoWheel(event) {
   pointer-events: none;
 }
 
-.photoSection {
-  --photo-pad: 0.8vw;
-  position: relative;
-  width: 80vw;
-  height: 100%;
-  overflow: hidden;
-}
-
 .photoSectionDot {
-  position: absolute;
+  position: fixed;
   z-index: 1;
   width: 2px;
   height: 2px;
@@ -181,7 +201,7 @@ function onPhotoWheel(event) {
 
 .photoSectionDotTR {
   top: var(--photo-pad);
-  right: var(--photo-pad);
+  right: calc(20vw + var(--photo-pad));
 }
 
 .photoSectionDotBL {
@@ -191,33 +211,31 @@ function onPhotoWheel(event) {
 
 .photoSectionDotBR {
   bottom: var(--photo-pad);
-  right: var(--photo-pad);
+  right: calc(20vw + var(--photo-pad));
 }
 
-.photoSectionScroll {
+.photoLoading {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80vw;
   height: 100%;
-  overflow-y: auto;
-  direction: rtl;
-  scroll-snap-type: y mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 20%) transparent;
+  margin: 0;
+  color: hsl(0, 0%, 60%);
+  font-family: "Petrona", serif;
+  font-size: 1.3vw;
+  font-weight: 400;
+  pointer-events: none;
+  direction: ltr;
 }
 
-.photoSectionScroll::-webkit-scrollbar {
-  width: 9px;
-}
-
-.photoSectionScroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.photoSectionScroll::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 20%);
-  border-radius: 4.5px;
-}
-
-.photoSectionScroll::-webkit-scrollbar-button {
-  display: none;
+.photoSlides {
+  direction: ltr;
+  width: 100%;
 }
 
 .photoSlide {
@@ -226,10 +244,9 @@ function onPhotoWheel(event) {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  width: 80vw;
+  height: 100svh;
   padding: var(--photo-pad);
-  direction: ltr;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -244,9 +261,13 @@ function onPhotoWheel(event) {
 }
 
 .infoSection {
-  position: relative;
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  right: 0;
   width: 20vw;
   height: 100%;
+  direction: ltr;
 }
 
 .infoMeta {
