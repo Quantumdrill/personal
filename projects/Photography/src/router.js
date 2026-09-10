@@ -3,7 +3,7 @@ import BrowsePage from './components/BrowsePage.vue'
 import ViewPage from './components/ViewPage.vue'
 
 const router = createRouter({
-  history: createWebHistory('/photos/'),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', component: BrowsePage },
     { path: '/set/:id', component: ViewPage },
