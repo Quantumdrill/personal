@@ -150,7 +150,6 @@ function onPhotoLoad() {
   height: 100svh;
   overflow-x: hidden;
   overflow-y: auto;
-  direction: rtl;
   scroll-snap-type: y mandatory;
   background: hsl(0, 0%, 20%);
   scrollbar-width: thin;
@@ -230,11 +229,9 @@ function onPhotoLoad() {
   font-size: 1.3vw;
   font-weight: 400;
   pointer-events: none;
-  direction: ltr;
 }
 
 .photoSlides {
-  direction: ltr;
   width: 100%;
 }
 
@@ -267,7 +264,6 @@ function onPhotoLoad() {
   right: 0;
   width: 20vw;
   height: 100%;
-  direction: ltr;
 }
 
 .infoMeta {
