@@ -22,6 +22,12 @@ import { projects } from "../config/project-names.mjs";
         }
       }
   
-      return new Response("Worker is running");
+      console.log("Worker is running");
+      
+      url.pathname = "/index.html";
+
+      return env.ASSETS.fetch(
+        new Request(url, request)
+      );
     },
   };

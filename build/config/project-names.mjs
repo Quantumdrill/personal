@@ -11,4 +11,8 @@ export const projects = [
       folder: "theCookiePilgrimage",
       path: "/cookie-pilgrimage",
     },
+    {
+      folder: "Oiiaioiiiai",
+      path: "/oiiaioiiiai",
+    },
   ];

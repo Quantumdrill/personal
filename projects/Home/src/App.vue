@@ -26,6 +26,7 @@
 
 <template>
   <router-view />
+  <div id="hi">hi</div>
   <!-- <div id="bg" class="bg-orange">
     <name/>
     <circleBG/>
@@ -37,5 +38,17 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+}
+
+#hi {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+    z-index: 1000;
+    line-height: 95vh;
+    pointer-events: none;
 }
 </style>
