@@ -111,7 +111,7 @@ function openSet() {
   width: calc((100% - 3 * var(--gallery-gap)) / 4);
   aspect-ratio: 1;
   padding: 0.8vw;
-  background: none;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .photoCardDot {

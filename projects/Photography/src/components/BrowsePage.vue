@@ -780,7 +780,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   width: 100%;
   margin-top: 1.6vw;
   margin-bottom: 0.6vw;
-  padding-left: 0.7vw;
+  padding-left: 0.3vw;
   background: none;
   color: hsl(0, 0%, 80%);
   font-family: "Neuton", serif;
