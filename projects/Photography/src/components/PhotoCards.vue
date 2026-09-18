@@ -88,6 +88,7 @@ function openSet() {
     <img
       v-if="thumbnail && thumbnail.asset"
       class="photoCardImage"
+      v-bind:class="{ isPortrait }"
       v-bind:src="thumbnailSrc"
       v-bind:srcset="thumbnailSrcSet"
       v-bind:sizes="thumbnailSizes"
@@ -145,11 +146,15 @@ function openSet() {
 .photoCardImage {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  height: auto;
   cursor: pointer;
   filter: drop-shadow(0 0 0 hsl(0, 0%, 0%, 0));
   transition: filter 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.photoCardImage.isPortrait {
+  width: auto;
+  height: 100%;
 }
 
 </style>
