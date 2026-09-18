@@ -108,7 +108,7 @@ function openSet() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc((100% - 3 * var(--gallery-gap)) / 4);
+  width: var(--gallery-card-width);
   aspect-ratio: 1;
   padding: 0.8vw;
   background: rgba(0, 0, 0, 0.1);
@@ -144,10 +144,8 @@ function openSet() {
 
 .photoCardImage {
   display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   cursor: pointer;
   filter: drop-shadow(0 0 0 hsl(0, 0%, 0%, 0));

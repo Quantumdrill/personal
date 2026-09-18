@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getSet } from '../lib/queries'
 import { urlFor } from '../lib/image'
@@ -15,10 +15,16 @@ const setDate = computed(() => formatSetDate(set.value && set.value.time))
 const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 
 onMounted(async () => {
+  window.addEventListener('keydown', onPhotoKeydown)
+
   set.value = await getSet(route.params.id)
   if (!set.value || !set.value.photos || set.value.photos.length === 0) {
     isLoading.value = false
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onPhotoKeydown)
 })
 
 function formatSetDate(time) {
@@ -79,9 +85,24 @@ function onPhotoLoad() {
 
 function onPhotoWheel(event) {
   event.preventDefault()
+  const direction = event.deltaY > 0 ? 1 : -1
+  pagePhoto(direction)
+}
+
+function onPhotoKeydown(event) {
+  const nextKeys = [' ', 'ArrowRight', 'ArrowDown']
+  const previousKeys = ['ArrowUp', 'ArrowLeft']
+
+  if (!nextKeys.includes(event.key) && !previousKeys.includes(event.key)) return
+
+  event.preventDefault()
+  const direction = nextKeys.includes(event.key) ? 1 : -1
+  pagePhoto(direction)
+}
+
+function pagePhoto(direction) {
   if (isPaging.value || !photoScroll.value) return
 
-  const direction = event.deltaY > 0 ? 1 : -1
   const pageHeight = photoScroll.value.clientHeight
   const maxScroll = photoScroll.value.scrollHeight - pageHeight
   const nextTop = Math.min(
@@ -289,7 +310,7 @@ function onPhotoWheel(event) {
 }
 
 .infoTime {
-  font-size: 1.6vw;
+  font-size: 1.5vw;
   font-weight: 700;
 }
 
@@ -302,5 +323,8 @@ function onPhotoWheel(event) {
 
 .infoComment {
   white-space: pre-wrap;
+  font-size: 1vw;
+  font-style: italic;
+  margin-top: 1.8vw;
 }
 </style>

@@ -22,22 +22,22 @@ onMounted(async () => {
   console.log(sets.value)
 })
 
-const sortBy = ref(null)
-const sortByTitle = ref(null)
-const sortByPanel = ref(null)
-const sortByLineV = ref(null)
-const sortByLineH = ref(null)
+const groupBy = ref(null)
+const groupByTitle = ref(null)
+const groupByPanel = ref(null)
+const groupByLineV = ref(null)
+const groupByLineH = ref(null)
 const photoLineL = ref(null)
 const photoLineR = ref(null)
 const photoLineT = ref(null)
 const photoLineB = ref(null)
 const hoveredPhoto = ref(null)
 const isOpen = ref(false)
-const isSortReady = ref(false)
+const isGroupReady = ref(false)
 const isGalleryReady = ref(true)
-const showSortTitle = ref(true)
+const showGroupTitle = ref(true)
 const isHoveringGallery = ref(false)
-const sortByMode = ref('Random')
+const groupByMode = ref('Random')
 
 function shuffleSets(list) {
   const shuffled = [...list]
@@ -51,7 +51,7 @@ function shuffleSets(list) {
 }
 
 const galleryGroups = computed(() => {
-  if (sortByMode.value === 'Random') {
+  if (groupByMode.value === 'Random') {
     return [
       {
         key: 'random',
@@ -61,7 +61,7 @@ const galleryGroups = computed(() => {
     ]
   }
 
-  if (sortByMode.value === 'Tag') {
+  if (groupByMode.value === 'Tag') {
     return tagsWithSets.value
       .filter((tag) => tag.sets && tag.sets.length > 0)
       .map((tag) => ({
@@ -71,7 +71,7 @@ const galleryGroups = computed(() => {
       }))
   }
 
-  if (sortByMode.value === 'Album') {
+  if (groupByMode.value === 'Album') {
     return [...albums.value]
       .sort((firstAlbum, secondAlbum) => {
         return (secondAlbum.time ?? '').localeCompare(firstAlbum.time ?? '')
@@ -84,7 +84,7 @@ const galleryGroups = computed(() => {
       .filter((group) => group.sets.length > 0)
   }
 
-  if (sortByMode.value !== 'Time') {
+  if (groupByMode.value !== 'Time') {
     return []
   }
 
@@ -124,7 +124,7 @@ function formatMonth(monthKey) {
 
 function fadeTitleIn() {
   if (isOpen.value) return
-  gsap.to(sortByTitle.value, {
+  gsap.to(groupByTitle.value, {
     opacity: 0.8,
     duration: 0.2,
     ease: 'power2.out',
@@ -133,29 +133,29 @@ function fadeTitleIn() {
 
 function fadeTitleOut() {
   if (isOpen.value) return
-  gsap.to(sortByTitle.value, {
+  gsap.to(groupByTitle.value, {
     opacity: 0.1,
     duration: 0.2,
     ease: 'power2.out',
   })
 }
 
-function openSortBy() {
+function openGroupBy() {
   if (isOpen.value) return
   isOpen.value = true
   isGalleryReady.value = false
   parkPhotoLines()
-  gsap.to(sortBy.value, {
+  gsap.to(groupBy.value, {
     marginLeft: 0,
     duration: 0.35,
     ease: 'power2.out',
     onComplete: () => {
       if (!isOpen.value) return
-      isSortReady.value = true
-      showSortTitle.value = false
+      isGroupReady.value = true
+      showGroupTitle.value = false
       nextTick(() => {
         moveLinesToHit(currentHit(), false, 0)
-        gsap.to([sortByLineV.value, sortByLineH.value], {
+        gsap.to([groupByLineV.value, groupByLineH.value], {
           opacity: 1,
           duration: 0.2,
           ease: 'power2.out',
@@ -163,24 +163,24 @@ function openSortBy() {
       })
     },
   })
-  gsap.to(sortByTitle.value, {
+  gsap.to(groupByTitle.value, {
     opacity: 0,
     duration: 0.12,
     ease: 'power2.out',
   })
-  gsap.to(sortByPanel.value, {
+  gsap.to(groupByPanel.value, {
     opacity: 1,
     duration: 0.35,
     ease: 'power2.out',
   })
 }
 
-function closeSortBy() {
+function closeGroupBy() {
   if (!isOpen.value) return
   isOpen.value = false
-  isSortReady.value = false
-  showSortTitle.value = true
-  gsap.to(sortBy.value, {
+  isGroupReady.value = false
+  showGroupTitle.value = true
+  gsap.to(groupBy.value, {
     marginLeft: '-45vw',
     duration: 0.35,
     ease: 'power2.out',
@@ -190,18 +190,18 @@ function closeSortBy() {
     },
   })
   nextTick(() => {
-    gsap.to(sortByTitle.value, {
+    gsap.to(groupByTitle.value, {
       opacity: 0.1,
       duration: 0.35,
       ease: 'power2.out',
     })
   })
-  gsap.to(sortByPanel.value, {
+  gsap.to(groupByPanel.value, {
     opacity: 0,
     duration: 0.2,
     ease: 'power2.out',
   })
-  gsap.to([sortByLineV.value, sortByLineH.value], {
+  gsap.to([groupByLineV.value, groupByLineH.value], {
     opacity: 0,
     duration: 0.2,
     ease: 'power2.out',
@@ -210,19 +210,19 @@ function closeSortBy() {
 }
 
 function currentHit() {
-  return sortByPanel.value.querySelector('.sortByOptionHit.isCurrent')
+  return groupByPanel.value.querySelector('.groupByOptionHit.isCurrent')
 }
 
 function moveLinesToHit(hit, highlighted, duration) {
-  if (!hit || !sortByLineV.value || !sortByLineH.value) return
-  const text = hit.querySelector('.sortByOption')
+  if (!hit || !groupByLineV.value || !groupByLineH.value) return
+  const text = hit.querySelector('.groupByOption')
   const fontSize = parseFloat(getComputedStyle(text).fontSize)
   const gap = fontSize * 0.1
   let leftV
   let topH
   if (highlighted) {
     const hitBox = hit.getBoundingClientRect()
-    const shift = hit.dataset.mode === sortByMode.value ? 0 : window.innerWidth * 0.008
+    const shift = hit.dataset.mode === groupByMode.value ? 0 : window.innerWidth * 0.008
     leftV = hitBox.left + shift + text.offsetWidth + gap
     topH = hitBox.top + (hitBox.height - text.offsetHeight) / 2 + text.offsetHeight
   } else {
@@ -237,33 +237,33 @@ function moveLinesToHit(hit, highlighted, duration) {
     y: 0,
   }
   if (duration === 0) {
-    gsap.set(sortByLineV.value, { left: leftV, x: 0 })
-    gsap.set(sortByLineH.value, { top: topH, y: 0 })
+    gsap.set(groupByLineV.value, { left: leftV, x: 0 })
+    gsap.set(groupByLineH.value, { top: topH, y: 0 })
     return
   }
-  gsap.to(sortByLineV.value, {
+  gsap.to(groupByLineV.value, {
     left: leftV,
     ...tween,
   })
-  gsap.to(sortByLineH.value, {
+  gsap.to(groupByLineH.value, {
     top: topH,
     ...tween,
   })
 }
 
 function highlightOption(event) {
-  if (!isSortReady.value) return
-  const hits = sortByPanel.value.querySelectorAll('.sortByOptionHit')
-  const hoveringCurrent = event.currentTarget.dataset.mode === sortByMode.value
+  if (!isGroupReady.value) return
+  const hits = groupByPanel.value.querySelectorAll('.groupByOptionHit')
+  const hoveringCurrent = event.currentTarget.dataset.mode === groupByMode.value
   hits.forEach((hit) => {
-    const isCurrent = hit.dataset.mode === sortByMode.value
+    const isCurrent = hit.dataset.mode === groupByMode.value
     const isHighlighted = hit === event.currentTarget && !isCurrent
     gsap.to(hit, {
       x: isCurrent ? '1.5em' : 0,
       duration: 0.2,
       ease: 'power2.out',
     })
-    gsap.to(hit.querySelector('.sortByOption'), {
+    gsap.to(hit.querySelector('.groupByOption'), {
       opacity: isCurrent ? (hoveringCurrent ? 0.8 : 0.2) : isHighlighted ? 0.8 : 0.2,
       x: isHighlighted ? '0.8vw' : 0,
       duration: 0.2,
@@ -273,26 +273,26 @@ function highlightOption(event) {
   moveLinesToHit(event.currentTarget, !hoveringCurrent, 0.2)
 }
 
-function selectSortBy(mode) {
-  if (mode !== sortByMode.value) {
-    sortByMode.value = mode
+function selectGroupBy(mode) {
+  if (mode !== groupByMode.value) {
+    groupByMode.value = mode
   }
-  closeSortBy()
+  closeGroupBy()
 }
 
 function resetOptions(event) {
-  if (event && event.relatedTarget && event.relatedTarget.closest('.sortByOptionHit')) {
+  if (event && event.relatedTarget && event.relatedTarget.closest('.groupByOptionHit')) {
     return
   }
-  const hits = sortByPanel.value.querySelectorAll('.sortByOptionHit')
+  const hits = groupByPanel.value.querySelectorAll('.groupByOptionHit')
   hits.forEach((hit) => {
-    const isCurrent = hit.dataset.mode === sortByMode.value
+    const isCurrent = hit.dataset.mode === groupByMode.value
     gsap.to(hit, {
       x: isCurrent ? '1.5em' : 0,
       duration: 0.2,
       ease: 'power2.out',
     })
-    gsap.to(hit.querySelector('.sortByOption'), {
+    gsap.to(hit.querySelector('.groupByOption'), {
       opacity: isCurrent ? 0.8 : 0.2,
       x: 0,
       duration: 0.2,
@@ -387,75 +387,75 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 <template>
   <div class="browse">
     <img class="browseLogo" v-bind:src="logoSrc" alt="" />
-    <section ref="sortBy" class="sortBy">
+    <section ref="groupBy" class="groupBy">
       <div
-        ref="sortByPanel"
-        class="sortByPanel"
-        v-bind:style="{ pointerEvents: isSortReady ? 'auto' : 'none' }"
+        ref="groupByPanel"
+        class="groupByPanel"
+        v-bind:style="{ pointerEvents: isGroupReady ? 'auto' : 'none' }"
       >
-        <p class="sortByHeading">Sort photo sets by:</p>
-        <div class="sortByOptions">
+        <p class="groupByHeading">Group photo sets by:</p>
+        <div class="groupByOptions">
           <div
-            class="sortByOptionHit"
+            class="groupByOptionHit"
             data-mode="Tag"
-            v-bind:class="{ isCurrent: sortByMode === 'Tag' }"
+            v-bind:class="{ isCurrent: groupByMode === 'Tag' }"
             v-on:mouseenter="highlightOption"
             v-on:mouseleave="resetOptions"
-            v-on:click="selectSortBy('Tag')"
+            v-on:click="selectGroupBy('Tag')"
           >
-            <button class="sortByOption" type="button">Tag</button>
+            <button class="groupByOption" type="button">Tag</button>
           </div>
           <div
-            class="sortByOptionHit"
+            class="groupByOptionHit"
             data-mode="Time"
-            v-bind:class="{ isCurrent: sortByMode === 'Time' }"
+            v-bind:class="{ isCurrent: groupByMode === 'Time' }"
             v-on:mouseenter="highlightOption"
             v-on:mouseleave="resetOptions"
-            v-on:click="selectSortBy('Time')"
+            v-on:click="selectGroupBy('Time')"
           >
-            <button class="sortByOption" type="button">Time</button>
+            <button class="groupByOption" type="button">Time</button>
           </div>
           <div
-            class="sortByOptionHit"
+            class="groupByOptionHit"
             data-mode="Album"
-            v-bind:class="{ isCurrent: sortByMode === 'Album' }"
+            v-bind:class="{ isCurrent: groupByMode === 'Album' }"
             v-on:mouseenter="highlightOption"
             v-on:mouseleave="resetOptions"
-            v-on:click="selectSortBy('Album')"
+            v-on:click="selectGroupBy('Album')"
           >
-            <button class="sortByOption" type="button">Album</button>
+            <button class="groupByOption" type="button">Album</button>
           </div>
           <div
-            class="sortByOptionHit"
+            class="groupByOptionHit"
             data-mode="Random"
-            v-bind:class="{ isCurrent: sortByMode === 'Random' }"
+            v-bind:class="{ isCurrent: groupByMode === 'Random' }"
             v-on:mouseenter="highlightOption"
             v-on:mouseleave="resetOptions"
-            v-on:click="selectSortBy('Random')"
+            v-on:click="selectGroupBy('Random')"
           >
-            <button class="sortByOption" type="button">Random</button>
+            <button class="groupByOption" type="button">Random</button>
           </div>
         </div>
       </div>
-      <div class="sortByTitleWrap">
+      <div class="groupByTitleWrap">
         <button
-          ref="sortByTitle"
-          class="sortByTitle"
+          ref="groupByTitle"
+          class="groupByTitle"
           type="button"
-          v-show="showSortTitle"
-          v-on:click="openSortBy"
+          v-show="showGroupTitle"
+          v-on:click="openGroupBy"
           v-on:mouseenter="fadeTitleIn"
           v-on:mouseleave="fadeTitleOut"
         >
-          Sort By...
+          Group By...
         </button>
       </div>
     </section>
 
     <section
       class="photoGallery"
-      v-bind:class="{ isSortOpen: isOpen }"
-      v-on:click="closeSortBy"
+      v-bind:class="{ isGroupOpen: isOpen }"
+      v-on:click="closeGroupBy"
       v-on:mouseenter="enterGallery"
       v-on:mouseleave="leaveGallery"
     >
@@ -491,8 +491,8 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
     >
       back
     </p>
-    <div ref="sortByLineV" class="sortByLineV"></div>
-    <div ref="sortByLineH" class="sortByLineH"></div>
+    <div ref="groupByLineV" class="groupByLineV"></div>
+    <div ref="groupByLineH" class="groupByLineH"></div>
     <div ref="photoLineL" class="photoLineL"></div>
     <div ref="photoLineR" class="photoLineR"></div>
     <div ref="photoLineT" class="photoLineT"></div>
@@ -520,7 +520,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   pointer-events: none;
 }
 
-.sortBy {
+.groupBy {
   position: relative;
   z-index: 2;
   box-sizing: border-box;
@@ -529,7 +529,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   margin-left: -45vw;
 }
 
-.sortByPanel {
+.groupByPanel {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -540,7 +540,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   pointer-events: none;
 }
 
-.sortByHeading {
+.groupByHeading {
   margin: 0 0 3vw;
   color: #fff;
   font-family: "Neuton", serif;
@@ -549,7 +549,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   font-weight: 400;
 }
 
-.sortByOptions {
+.groupByOptions {
   --option-row: 7vw;
   position: relative;
   display: flex;
@@ -559,7 +559,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   gap: 0;
 }
 
-.sortByOptionHit {
+.groupByOptionHit {
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -570,17 +570,17 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   cursor: pointer;
 }
 
-.sortByOptionHit.isCurrent {
+.groupByOptionHit.isCurrent {
   transform: translateX(1.5em);
 }
 
-.sortByOptionHit.isCurrent .sortByOption {
+.groupByOptionHit.isCurrent .groupByOption {
   opacity: 0.8;
   cursor: pointer;
 }
 
-.sortByLineV,
-.sortByLineH {
+.groupByLineV,
+.groupByLineH {
   position: fixed;
   z-index: 0;
   background: rgb(255 255 255 / 10%);
@@ -588,14 +588,14 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   opacity: 0;
 }
 
-.sortByLineV {
+.groupByLineV {
   top: 0;
   left: 0;
   width: 2px;
   height: 100vh;
 }
 
-.sortByLineH {
+.groupByLineH {
   left: 0;
   width: 100vw;
   height: 2px;
@@ -641,7 +641,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   top: 100vh;
 }
 
-.sortByOption {
+.groupByOption {
   display: block;
   width: max-content;
   margin: 0;
@@ -658,7 +658,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   pointer-events: none;
 }
 
-.sortByTitleWrap {
+.groupByTitleWrap {
   position: absolute;
   top: 0;
   right: 0;
@@ -667,7 +667,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   pointer-events: none;
 }
 
-.sortByTitle {
+.groupByTitle {
   position: absolute;
   left: -1vw;
   top: calc(100% - 1vw);
@@ -692,6 +692,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 
 .photoGallery {
   --gallery-gap: 2vw;
+  --gallery-card-width: calc((100% - 2 * var(--gallery-gap)) / 3);
   position: relative;
   z-index: 1;
   flex-shrink: 0;
@@ -700,7 +701,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   overflow: hidden;
 }
 
-.photoGallery.isSortOpen {
+.photoGallery.isGroupOpen {
   cursor: pointer;
 }
 
@@ -743,7 +744,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 }
 
 .galleryBack.isVisible {
-  opacity: 0.1;
+  opacity: 0.05;
 }
 
 .photoGalleryScroll {
@@ -795,5 +796,11 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   gap: var(--gallery-gap);
   margin-top: 1vw;
   margin-bottom: 1vw;
+}
+
+@media (min-width: 1280px) {
+  .photoGallery {
+    --gallery-card-width: calc((100% - 3 * var(--gallery-gap)) / 4);
+  }
 }
 </style>
