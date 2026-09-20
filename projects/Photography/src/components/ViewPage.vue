@@ -84,9 +84,20 @@ function onPhotoLoad() {
 }
 
 function onPhotoWheel(event) {
+  const isInfoScroll =
+    event.target instanceof Element && event.target.closest('.infoSection')
+
+  if (isPortraitPhoneMode() && isInfoScroll) return
+
   event.preventDefault()
   const direction = event.deltaY > 0 ? 1 : -1
   pagePhoto(direction)
+}
+
+function isPortraitPhoneMode() {
+  return window.matchMedia(
+    '(max-width: 767px) and (orientation: portrait)',
+  ).matches
 }
 
 function onPhotoKeydown(event) {
@@ -152,6 +163,7 @@ function pagePhoto(direction) {
         <img
           v-if="photo.asset"
           class="photoSlideImage"
+          v-bind:class="{ isPortrait: isPortrait(photo) }"
           v-bind:src="photoSrc(photo)"
           v-bind:srcset="photoSrcSet(photo)"
           v-bind:sizes="photoSizes(photo)"
@@ -326,5 +338,93 @@ function pagePhoto(direction) {
   font-size: 1vw;
   font-style: italic;
   margin-top: 1.8vw;
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .view {
+    --photo-pad: 2vw;
+    height: 75svh;
+  }
+
+  .viewLogo {
+    top: auto;
+    right: auto;
+    bottom: 4vw;
+    left: 4vw;
+    width: 10vw;
+  }
+
+  .photoSectionDotTR {
+    right: var(--photo-pad);
+  }
+
+  .photoSectionDotBL,
+  .photoSectionDotBR {
+    top: calc(75svh - var(--photo-pad) - 2px);
+    bottom: auto;
+  }
+
+  .photoSectionDotBR {
+    right: var(--photo-pad);
+  }
+
+  .photoLoading {
+    width: 100vw;
+    height: 75svh;
+    font-size: 4vw;
+  }
+
+  .photoSlide {
+    width: 100vw;
+    height: 75svh;
+  }
+
+  .photoSlideImage {
+    width: 100%;
+    height: auto;
+  }
+
+  .photoSlideImage.isPortrait {
+    width: auto;
+    height: 100%;
+  }
+
+  .infoSection {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    width: 100vw;
+    height: 25svh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 20%) transparent;
+  }
+
+  .infoMeta {
+    position: static;
+    box-sizing: border-box;
+    justify-content: flex-end;
+    width: 100%;
+    min-height: 100%;
+    max-width: none;
+    padding: 4vw;
+    padding-left: 16vw;
+  }
+
+  .infoTime {
+    font-size: 6vw;
+  }
+
+  .infoLocation,
+  .infoComment {
+    margin-top: 2.4vw;
+    font-size: 5.2vw;
+  }
+
+  .infoComment {
+    margin-top: 7.2vw;
+    font-size: 4vw;
+  }
 }
 </style>

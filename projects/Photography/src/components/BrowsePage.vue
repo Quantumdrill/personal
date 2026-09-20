@@ -134,7 +134,7 @@ function fadeTitleIn() {
 function fadeTitleOut() {
   if (isOpen.value) return
   gsap.to(groupByTitle.value, {
-    opacity: 0.1,
+    opacity: 0.3,
     duration: 0.2,
     ease: 'power2.out',
   })
@@ -144,7 +144,9 @@ function openGroupBy() {
   if (isOpen.value) return
   isOpen.value = true
   isGalleryReady.value = false
-  parkPhotoLines()
+  if (!isPortraitPhoneMode()) {
+    parkPhotoLines()
+  }
   gsap.to(groupBy.value, {
     marginLeft: 0,
     duration: 0.35,
@@ -152,8 +154,8 @@ function openGroupBy() {
     onComplete: () => {
       if (!isOpen.value) return
       isGroupReady.value = true
-      showGroupTitle.value = false
       nextTick(() => {
+        if (isPortraitPhoneMode()) return
         moveLinesToHit(currentHit(), false, 0)
         gsap.to([groupByLineV.value, groupByLineH.value], {
           opacity: 1,
@@ -163,10 +165,16 @@ function openGroupBy() {
       })
     },
   })
+  gsap.killTweensOf(groupByTitle.value)
   gsap.to(groupByTitle.value, {
     opacity: 0,
     duration: 0.12,
     ease: 'power2.out',
+    onComplete: () => {
+      if (isOpen.value) {
+        showGroupTitle.value = false
+      }
+    },
   })
   gsap.to(groupByPanel.value, {
     opacity: 1,
@@ -175,13 +183,25 @@ function openGroupBy() {
   })
 }
 
+function isPortraitPhoneMode() {
+  return window.matchMedia(
+    '(max-width: 767px) and (orientation: portrait)',
+  ).matches
+}
+
+function groupByClosedMargin() {
+  return isPortraitPhoneMode() ? '-75vw' : '-45vw'
+}
+
 function closeGroupBy() {
   if (!isOpen.value) return
   isOpen.value = false
   isGroupReady.value = false
+  gsap.killTweensOf(groupByTitle.value)
+  gsap.set(groupByTitle.value, { opacity: 0 })
   showGroupTitle.value = true
   gsap.to(groupBy.value, {
-    marginLeft: '-45vw',
+    marginLeft: groupByClosedMargin(),
     duration: 0.35,
     ease: 'power2.out',
     onComplete: () => {
@@ -190,8 +210,9 @@ function closeGroupBy() {
     },
   })
   nextTick(() => {
+    if (isOpen.value) return
     gsap.to(groupByTitle.value, {
-      opacity: 0.1,
+      opacity: 0.3,
       duration: 0.35,
       ease: 'power2.out',
     })
@@ -201,11 +222,13 @@ function closeGroupBy() {
     duration: 0.2,
     ease: 'power2.out',
   })
-  gsap.to([groupByLineV.value, groupByLineH.value], {
-    opacity: 0,
-    duration: 0.2,
-    ease: 'power2.out',
-  })
+  if (!isPortraitPhoneMode()) {
+    gsap.to([groupByLineV.value, groupByLineH.value], {
+      opacity: 0,
+      duration: 0.2,
+      ease: 'power2.out',
+    })
+  }
   resetOptions()
 }
 
@@ -214,6 +237,7 @@ function currentHit() {
 }
 
 function moveLinesToHit(hit, highlighted, duration) {
+  if (isPortraitPhoneMode()) return
   if (!hit || !groupByLineV.value || !groupByLineH.value) return
   const text = hit.querySelector('.groupByOption')
   const fontSize = parseFloat(getComputedStyle(text).fontSize)
@@ -305,6 +329,7 @@ function resetOptions(event) {
 }
 
 function placePhotoLines(photoBox, duration) {
+  if (isPortraitPhoneMode()) return
   if (duration === 0) {
     gsap.killTweensOf([
       photoLineL.value,
@@ -332,6 +357,7 @@ function placePhotoLines(photoBox, duration) {
 
 function parkPhotoLines() {
   hoveredPhoto.value = null
+  if (isPortraitPhoneMode()) return
   gsap.killTweensOf([
     photoLineL.value,
     photoLineR.value,
@@ -345,12 +371,17 @@ function parkPhotoLines() {
 }
 
 function showPhotoLines(photoEl) {
+  if (isPortraitPhoneMode()) return
   if (!isGalleryReady.value) return
   hoveredPhoto.value = photoEl
   placePhotoLines(photoEl.getBoundingClientRect(), 0.35)
 }
 
 function hidePhotoLines(event) {
+  if (isPortraitPhoneMode()) {
+    hoveredPhoto.value = null
+    return
+  }
   if (event && event.relatedTarget && event.relatedTarget.closest('.photoCardImage')) {
     return
   }
@@ -660,6 +691,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 
 .groupByTitleWrap {
   position: absolute;
+  z-index: 3;
   top: 0;
   right: 0;
   width: 15vw;
@@ -685,7 +717,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  opacity: 0.1;
+  opacity: 0.3;
   transform: rotate(-90deg);
   transform-origin: left top;
 }
@@ -801,6 +833,96 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 @media (min-width: 1280px) {
   .photoGallery {
     --gallery-card-width: calc((100% - 3 * var(--gallery-gap)) / 4);
+  }
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .browse {
+    flex-direction: row;
+  }
+
+  .browseLogo {
+    top: auto;
+    left: auto;
+    right: 4vw;
+    bottom: 4vw;
+    width: 10vw;
+  }
+
+  .groupBy {
+    position: relative;
+    z-index: 2;
+    left: auto;
+    bottom: auto;
+    width: 75vw;
+    height: 100%;
+    margin-left: -75vw;
+    background: hsl(0, 0%, 20%);
+  }
+
+  .groupByPanel {
+    padding: 6vw 5vw;
+  }
+
+  .groupByHeading {
+    margin-bottom: 4vw;
+    font-size: 8vw;
+    opacity: 0.4;
+  }
+
+  .groupByOptions {
+    --option-row: 15vw;
+  }
+
+  .groupByOptionHit,
+  .groupByOption {
+    font-size: 14vw;
+  }
+
+  .groupByTitleWrap {
+    top: auto;
+    right: auto;
+    left: 75vw;
+    bottom: 0;
+    width: 75vw;
+    height: 18vw;
+  }
+
+  .groupByTitle {
+    top: auto;
+    left: 4vw;
+    bottom: 4vw;
+    font-size: 12vw;
+    transform: none;
+  }
+
+  .photoGallery {
+    --gallery-gap: 3vw;
+    --gallery-card-width: calc((100% - var(--gallery-gap)) / 2);
+    order: initial;
+    width: 100vw;
+    height: calc(100svh - 18vw);
+  }
+
+  .groupByLineV,
+  .groupByLineH,
+  .photoLineL,
+  .photoLineR,
+  .photoLineT,
+  .photoLineB {
+    display: none;
+  }
+
+  .photoGalleryDivider {
+    margin-top: 4vw;
+    margin-bottom: 2vw;
+    padding-left: 1vw;
+    font-size: 7vw;
+  }
+
+  .photoGalleryGroup {
+    margin-top: 2vw;
+    margin-bottom: 2vw;
   }
 }
 </style>
