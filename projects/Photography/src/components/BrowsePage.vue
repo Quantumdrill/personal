@@ -134,7 +134,7 @@ function fadeTitleIn() {
 function fadeTitleOut() {
   if (isOpen.value) return
   gsap.to(groupByTitle.value, {
-    opacity: 0.3,
+    opacity: groupByRestingOpacity(),
     duration: 0.2,
     ease: 'power2.out',
   })
@@ -193,6 +193,10 @@ function groupByClosedMargin() {
   return isPortraitPhoneMode() ? '-75vw' : '-45vw'
 }
 
+function groupByRestingOpacity() {
+  return isPortraitPhoneMode() ? 0.3 : 0.1
+}
+
 function closeGroupBy() {
   if (!isOpen.value) return
   isOpen.value = false
@@ -212,7 +216,7 @@ function closeGroupBy() {
   nextTick(() => {
     if (isOpen.value) return
     gsap.to(groupByTitle.value, {
-      opacity: 0.3,
+      opacity: groupByRestingOpacity(),
       duration: 0.35,
       ease: 'power2.out',
     })
@@ -717,7 +721,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  opacity: 0.3;
+  opacity: 0.1;
   transform: rotate(-90deg);
   transform-origin: left top;
 }
@@ -893,7 +897,12 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
     left: 4vw;
     bottom: 4vw;
     font-size: 12vw;
+    opacity: 0.3;
     transform: none;
+  }
+
+  .galleryBack {
+    display: none;
   }
 
   .photoGallery {
