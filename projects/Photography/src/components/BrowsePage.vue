@@ -1,14 +1,39 @@
 <script setup>
-import { computed, ref, nextTick, onMounted } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import gsap from 'gsap'
 import { getAlbums, getTagsWithSets, getSets } from '../lib/queries'
 import PhotoCards from './PhotoCards.vue'
 
+const route = useRoute()
+const router = useRouter()
 const sets = ref([])
 const albums = ref([])
 const tagsWithSets = ref([])
+const groupingModes = ['Random', 'Tag', 'Time', 'Album']
+const phoneIntroStorageKey = 'photography:phone-layout-accepted'
+
+function groupingModeFromQuery(queryValue) {
+  const value = Array.isArray(queryValue) ? queryValue[0] : queryValue
+  return (
+    groupingModes.find((mode) => mode.toLowerCase() === String(value).toLowerCase()) ??
+    'Random'
+  )
+}
+
+const groupByMode = ref(groupingModeFromQuery(route.query.group))
+const showPhoneIntro = ref(
+  isPortraitPhoneMode() && sessionStorage.getItem(phoneIntroStorageKey) !== 'true',
+)
 
 onMounted(async () => {
+  const normalizedGroup = groupByMode.value.toLowerCase()
+  if (route.query.group !== normalizedGroup) {
+    await router.replace({
+      query: { ...route.query, group: normalizedGroup },
+    })
+  }
+
   const [fetchedSets, fetchedAlbums, fetchedTags] = await Promise.all([
     getSets(),
     getAlbums(),
@@ -20,6 +45,9 @@ onMounted(async () => {
   tagsWithSets.value = fetchedTags
 
   console.log(sets.value)
+
+  await nextTick()
+  restoreGalleryScroll()
 })
 
 const groupBy = ref(null)
@@ -27,6 +55,7 @@ const groupByTitle = ref(null)
 const groupByPanel = ref(null)
 const groupByLineV = ref(null)
 const groupByLineH = ref(null)
+const photoGalleryScroll = ref(null)
 const photoLineL = ref(null)
 const photoLineR = ref(null)
 const photoLineT = ref(null)
@@ -37,7 +66,32 @@ const isGroupReady = ref(false)
 const isGalleryReady = ref(true)
 const showGroupTitle = ref(true)
 const isHoveringGallery = ref(false)
-const groupByMode = ref('Random')
+
+onBeforeUnmount(() => {
+  saveGalleryScroll()
+})
+
+function galleryScrollStorageKey() {
+  return `photography:browse-scroll:${groupByMode.value.toLowerCase()}`
+}
+
+function saveGalleryScroll() {
+  if (!photoGalleryScroll.value) return
+
+  sessionStorage.setItem(
+    galleryScrollStorageKey(),
+    String(photoGalleryScroll.value.scrollTop),
+  )
+}
+
+function restoreGalleryScroll() {
+  if (!photoGalleryScroll.value) return
+
+  const savedScroll = Number(sessionStorage.getItem(galleryScrollStorageKey()))
+  if (Number.isFinite(savedScroll)) {
+    photoGalleryScroll.value.scrollTop = savedScroll
+  }
+}
 
 function shuffleSets(list) {
   const shuffled = [...list]
@@ -303,7 +357,17 @@ function highlightOption(event) {
 
 function selectGroupBy(mode) {
   if (mode !== groupByMode.value) {
+    saveGalleryScroll()
     groupByMode.value = mode
+    sessionStorage.setItem(galleryScrollStorageKey(), '0')
+    router.replace({
+      query: { ...route.query, group: mode.toLowerCase() },
+    })
+    nextTick(() => {
+      if (photoGalleryScroll.value) {
+        photoGalleryScroll.value.scrollTop = 0
+      }
+    })
   }
   closeGroupBy()
 }
@@ -416,11 +480,29 @@ function leaveGallery() {
   isHoveringGallery.value = false
 }
 
+function continueWithPhoneLayout() {
+  sessionStorage.setItem(phoneIntroStorageKey, 'true')
+  showPhoneIntro.value = false
+}
+
 const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 </script>
 
 <template>
   <div class="browse">
+    <div v-if="showPhoneIntro" class="phoneIntro">
+      <p class="phoneIntroText">
+        Please use a large screen/desktop for the best experience.
+      </p>
+      <button
+        class="phoneIntroButton"
+        type="button"
+        v-on:click="continueWithPhoneLayout"
+      >
+        Continue with phone layout
+      </button>
+    </div>
+
     <img class="browseLogo" v-bind:src="logoSrc" alt="" />
     <section ref="groupBy" class="groupBy">
       <div
@@ -495,6 +577,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
       v-on:mouseleave="leaveGallery"
     >
       <div
+        ref="photoGalleryScroll"
         class="photoGalleryScroll"
         v-bind:style="{ pointerEvents: isGalleryReady ? 'auto' : 'none' }"
         v-on:scroll="onGalleryScroll"
@@ -542,6 +625,42 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   height: 100svh;
   overflow: hidden;
   background: hsl(0, 0%, 20%);
+}
+
+.phoneIntro {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8vw;
+  padding: 8vw;
+  background: hsl(0, 0%, 20%);
+  text-align: center;
+}
+
+.phoneIntroText {
+  max-width: 80vw;
+  margin: 0;
+  color: hsl(0, 0%, 80%);
+  font-family: "Petrona", serif;
+  font-size: clamp(18px, 5vw, 28px);
+  line-height: 1.3;
+}
+
+.phoneIntroButton {
+  margin: 0;
+  padding: 3vw 4vw;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background: rgb(0 0 0 / 0%);
+  color: hsl(0, 0%, 80%);
+  font-family: "Petrona", serif;
+  font-size: clamp(16px, 4vw, 22px);
+  line-height: 1.2;
+  cursor: pointer;
 }
 
 .browseLogo {

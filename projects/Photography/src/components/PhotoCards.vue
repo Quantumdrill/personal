@@ -85,6 +85,9 @@ function openSet() {
     <span class="photoCardDot photoCardDotTR"></span>
     <span class="photoCardDot photoCardDotBL"></span>
     <span class="photoCardDot photoCardDotBR"></span>
+    <span class="photoCardCount">
+      {{ set.photos ? set.photos.length : 0 }} img
+    </span>
     <img
       v-if="thumbnail && thumbnail.asset"
       class="photoCardImage"
@@ -141,6 +144,25 @@ function openSet() {
 .photoCardDotBR {
   bottom: 0;
   right: 0;
+}
+
+.photoCardCount {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 0.25vw);
+  right: 0;
+  color: #fff;
+  font-family: "Petrona", serif;
+  font-size: clamp(10px, 0.9vw, 16px);
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.photoCard:hover .photoCardCount {
+  opacity: 0.5;
 }
 
 .photoCardImage {
