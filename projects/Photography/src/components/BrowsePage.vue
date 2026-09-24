@@ -689,7 +689,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   flex-direction: column;
   justify-content: flex-end;
   height: 100%;
-  padding: 4vw 6vw 4vw 2vw;
+  padding: 4vw 6vw 2vw 2vw;
   opacity: 0;
   pointer-events: none;
 }
@@ -697,14 +697,14 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
 .groupByHeading {
   margin: 0 0 3vw;
   color: #fff;
-  font-family: "Neuton", serif;
-  font-size: 2.5vw;
+  font-family: "Young Serif", serif;
+  font-size: 2.25vw;
   opacity: 0.2;
   font-weight: 400;
 }
 
 .groupByOptions {
-  --option-row: 7vw;
+  --option-row: 7.6vw;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -720,7 +720,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   align-items: center;
   width: max-content;
   height: var(--option-row);
-  font-size: 8vw;
+  font-size: 7.2vw;
   cursor: pointer;
 }
 
@@ -803,9 +803,9 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   border: none;
   background: none;
   color: #fff;
-  font-family: "Neuton", serif;
-  font-size: 8vw;
-  font-weight: 800;
+  font-family: "Young Serif", serif;
+  font-size: 7.2vw;
+  font-weight: 400;
   line-height: 1;
   cursor: pointer;
   opacity: 0.2;
@@ -832,11 +832,11 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   border: none;
   background: none;
   color: #fff;
-  font-family: "Neuton", serif;
-  font-size: 7vw;
-  font-weight: 800;
+  font-family: "Young Serif", serif;
+  font-size: 6.3vw;
+  font-weight: 400;
   font-style: normal;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
@@ -881,16 +881,16 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   position: fixed;
   z-index: 6;
   top: auto;
-  right: -50vw;
+  right: -60vw;
   bottom: calc(4vw - (8vw - 7vw) / 2);
   margin: 0;
   padding: 0;
   color: #fff;
-  font-family: "Neuton", serif;
+  font-family: "Young Serif", serif;
   font-size: 45vw;
-  font-weight: 800;
+  font-weight: 400;
   line-height: 0.75;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -939,9 +939,9 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   padding-left: 0.3vw;
   background: none;
   color: hsl(0, 0%, 80%);
-  font-family: "Neuton", serif;
-  font-size: 3vw;
-  font-weight: 600;
+  font-family: "Young Serif", serif;
+  font-size: 2.7vw;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -984,22 +984,22 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
   }
 
   .groupByPanel {
-    padding: 6vw 5vw;
+    padding: 6vw 5vw 3vw;
   }
 
   .groupByHeading {
     margin-bottom: 4vw;
-    font-size: 8vw;
+    font-size: 6vw;
     opacity: 0.4;
   }
 
   .groupByOptions {
-    --option-row: 15vw;
+    --option-row: 16vw;
   }
 
   .groupByOptionHit,
   .groupByOption {
-    font-size: 14vw;
+    font-size: 12.6vw;
   }
 
   .groupByTitleWrap {
@@ -1015,7 +1015,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
     top: auto;
     left: 4vw;
     bottom: 4vw;
-    font-size: 12vw;
+    font-size: 10.8vw;
     opacity: 0.3;
     transform: none;
   }
@@ -1045,7 +1045,7 @@ const logoSrc = `${import.meta.env.BASE_URL}logo-white.svg`
     margin-top: 4vw;
     margin-bottom: 2vw;
     padding-left: 1vw;
-    font-size: 7vw;
+    font-size: 6.3vw;
   }
 
   .photoGalleryGroup {

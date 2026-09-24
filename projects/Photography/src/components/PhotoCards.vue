@@ -85,9 +85,6 @@ function openSet() {
     <span class="photoCardDot photoCardDotTR"></span>
     <span class="photoCardDot photoCardDotBL"></span>
     <span class="photoCardDot photoCardDotBR"></span>
-    <span class="photoCardCount">
-      {{ set.photos ? set.photos.length : 0 }} img
-    </span>
     <img
       v-if="thumbnail && thumbnail.asset"
       class="photoCardImage"
@@ -102,6 +99,9 @@ function openSet() {
       v-on:mouseleave="leavePhoto"
       v-on:click="openSet"
     />
+    <span class="photoCardCount">
+      {{ set.photos ? set.photos.length : 0 }} img
+    </span>
   </div>
 </template>
 
@@ -161,7 +161,7 @@ function openSet() {
   transition: opacity 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.photoCard:hover .photoCardCount {
+.photoCardImage:hover + .photoCardCount {
   opacity: 0.5;
 }
 
